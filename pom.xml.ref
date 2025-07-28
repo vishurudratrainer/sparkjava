@@ -1,68 +1,93 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+package extras.l000_ingestion.l000_csv;
 
-    <groupId>org.example</groupId>
-    <artifactId>gs1</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.11</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.11</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-    </dependencies>
-
-</project>
-
-package com.training.rdd;
-
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FilterFunction;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import scala.Function1;
 
-import java.util.*;
+import static org.apache.spark.sql.functions.col;
 
+public class BookRead {
 
-public class T1 {
 
     public static void main(String[] args) {
-        List<String> data = Arrays.asList("hello world",
-                "spark example",
-                "hello spark",
-                "rdd transformation and actions");
-        SparkSession spark = SparkSession.builder().appName("sample1")
-                .master("local[4]")
+        String path ="data/books.csv";
+        SparkSession spark = SparkSession.builder()
+                .appName("CSV to Dataset")
+                .master("local")
                 .getOrCreate();
-        JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
-        JavaRDD<String> numbersRDD = sc.parallelize(data,2);
-      //  System.out.println(numbersRDD.getNumPartitions());
-       // System.out.println(numbersRDD.glom().collect());
-        //Collect method actually converts your entire RDD To List
-       JavaRDD<String> upperRDD= numbersRDD.map(element->element.toUpperCase());
-        System.out.println(upperRDD.take(3));
-        //Best practice to make use of take instead of collect
 
-
+        Dataset<Row> df = spark.read().format("csv")
+                .option("inferSchema", "true")
+                .option("header", "true")
+                .load(path);
+        df.show();
+        df.filter("id ==1").show();
+        Dataset<Book> bookDf =df.as(Encoders.bean(Book.class));
+        bookDf.show();
+        bookDf.filter(col("authorId").equalTo(1)).show();
 
     }
+}
+
+
+package extras.l000_ingestion.l000_csv;
+
+public class Book{
+    Integer id,authorId;
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", authorId=" + authorId +
+                ", title='" + title + '\'' +
+                ", releaseDate='" + releaseDate + '\'' +
+                ", link='" + link + '\'' +
+                '}';
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Integer authorId) {
+        this.authorId = authorId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    String title,releaseDate,link;
 }
