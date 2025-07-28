@@ -51,9 +51,14 @@ public class T1 {
                 "spark example",
                 "hello spark",
                 "rdd transformation and actions");
-        SparkSession spark = SparkSession.builder().appName("sample1").getOrCreate();
+        SparkSession spark = SparkSession.builder().appName("sample1")
+                .master("local[4]")
+                .getOrCreate();
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
         JavaRDD<String> numbersRDD = sc.parallelize(data);
+        System.out.println(numbersRDD.getNumPartitions());
+        System.out.println(numbersRDD.glom().collect());
+
 
     }
 }
