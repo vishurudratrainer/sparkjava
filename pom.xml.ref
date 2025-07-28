@@ -28,6 +28,11 @@ public class BookRead {
         Dataset<Book> bookDf =df.as(Encoders.bean(Book.class));
         bookDf.show();
         bookDf.filter(col("authorId").equalTo(1)).show();
+ bookDf.filter((FilterFunction<Book>) book -> {
+                    System.out.println(book);
+                    return  book != null && Integer.valueOf(1).equals(book.getAuthorId());
+                }
+        ).show();
 
     }
 }
