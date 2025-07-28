@@ -33,3 +33,27 @@
     </dependencies>
 
 </project>
+
+
+package com.training.rdd;
+
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+
+import java.util.*;
+
+
+public class T1 {
+
+    public static void main(String[] args) {
+        List<String> data = Arrays.asList("hello world",
+                "spark example",
+                "hello spark",
+                "rdd transformation and actions");
+        SparkSession spark = SparkSession.builder().appName("sample1").getOrCreate();
+        JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
+        JavaRDD<String> numbersRDD = sc.parallelize(data);
+
+    }
+}
