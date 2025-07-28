@@ -34,7 +34,6 @@
 
 </project>
 
-
 package com.training.rdd;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -55,9 +54,14 @@ public class T1 {
                 .master("local[4]")
                 .getOrCreate();
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
-        JavaRDD<String> numbersRDD = sc.parallelize(data);
-        System.out.println(numbersRDD.getNumPartitions());
-        System.out.println(numbersRDD.glom().collect());
+        JavaRDD<String> numbersRDD = sc.parallelize(data,2);
+      //  System.out.println(numbersRDD.getNumPartitions());
+       // System.out.println(numbersRDD.glom().collect());
+        //Collect method actually converts your entire RDD To List
+       JavaRDD<String> upperRDD= numbersRDD.map(element->element.toUpperCase());
+        System.out.println(upperRDD.take(3));
+        //Best practice to make use of take instead of collect
+
 
 
     }
