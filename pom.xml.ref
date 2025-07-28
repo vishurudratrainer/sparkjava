@@ -1,98 +1,16 @@
-package extras.l000_ingestion.l000_csv;
+package extras;
 
-import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import scala.Function1;
 
-import static org.apache.spark.sql.functions.col;
-
-public class BookRead {
-
-
+public class ReadParquet {
     public static void main(String[] args) {
-        String path ="data/books.csv";
-        SparkSession spark = SparkSession.builder()
-                .appName("CSV to Dataset")
-                .master("local")
-                .getOrCreate();
-
-        Dataset<Row> df = spark.read().format("csv")
-                .option("inferSchema", "true")
-                .option("header", "true")
-                .load(path);
+        SparkSession spark = SparkSession.builder().appName("XML to Dataset")
+                .master("local").getOrCreate();
+        String filename = "data/userdata.parquet";
+        Dataset<Row> df = spark.read().parquet(filename);
+        df.printSchema();
         df.show();
-        df.filter("id ==1").show();
-        Dataset<Book> bookDf =df.as(Encoders.bean(Book.class));
-        bookDf.show();
-        bookDf.filter(col("authorId").equalTo(1)).show();
- bookDf.filter((FilterFunction<Book>) book -> {
-                    System.out.println(book);
-                    return  book != null && Integer.valueOf(1).equals(book.getAuthorId());
-                }
-        ).show();
-
     }
-}
-
-
-package extras.l000_ingestion.l000_csv;
-
-public class Book{
-    Integer id,authorId;
-
-    @Override
-    public String toString() {
-        return "Book{" +
-                "id=" + id +
-                ", authorId=" + authorId +
-                ", title='" + title + '\'' +
-                ", releaseDate='" + releaseDate + '\'' +
-                ", link='" + link + '\'' +
-                '}';
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getAuthorId() {
-        return authorId;
-    }
-
-    public void setAuthorId(Integer authorId) {
-        this.authorId = authorId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getReleaseDate() {
-        return releaseDate;
-    }
-
-    public void setReleaseDate(String releaseDate) {
-        this.releaseDate = releaseDate;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    String title,releaseDate,link;
 }
