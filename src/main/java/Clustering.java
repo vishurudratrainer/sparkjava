@@ -1,0 +1,46 @@
+//package mlib;
+
+import org.apache.spark.ml.clustering.KMeans;
+import org.apache.spark.ml.clustering.KMeansModel;
+import org.apache.spark.ml.feature.StringIndexer;
+import org.apache.spark.ml.feature.VectorAssembler;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+
+public class Clustering {
+
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession
+                .builder()
+                .appName("Iris")
+                .master("local[4]")
+                .getOrCreate();
+//getting data
+        Dataset<Row> irisDf = spark.read().option("header", "true")
+                .option("inferSchema", "true")
+                .csv("data/Iris.csv");
+        irisDf = irisDf.drop("id");
+        //convert output column to numeric
+
+        //thses converts all our input cplumns to feature column as an array
+        VectorAssembler vectorAssembler = new VectorAssembler()
+                .setInputCols(new String[]{"SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"})
+                .setOutputCol("features");
+        //creating decision tree
+        int numOfClusters =3;
+        int maxIterations=100;
+        long seed =1L;
+        KMeans kMeans = new KMeans()
+                .setFeaturesCol("features")
+                .setK(numOfClusters)
+                .setMaxIter(maxIterations)
+                .setSeed(seed);
+        Dataset<Row> featuresDf = vectorAssembler.transform(irisDf);
+        featuresDf.show();
+       KMeansModel model = kMeans.fit(featuresDf);
+        Dataset<Row> predictions =model.transform(featuresDf);
+        predictions.show();
+
+    }
+}
