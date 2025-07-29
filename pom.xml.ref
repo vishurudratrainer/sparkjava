@@ -1,1 +1,51 @@
 https://github.com/vishurudratrainer/notebooks/blob/main/jpmcsto/datasets-master/Iris.csv
+
+
+package dataframe;
+
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+
+import static org.apache.spark.sql.functions.*;
+
+public class IrisDf {
+
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession
+                .builder()
+                .appName("Iris")
+                .master("local[4]")
+                .getOrCreate();
+
+        Dataset<Row> irisDf = spark.read().option("header", "true")
+                .option("inferSchema", "true")
+                .csv("data/Iris.csv");
+        irisDf.printSchema();
+        irisDf.show(5);
+        System.out.println("Select few columns");
+        irisDf.select("SepalLengthCm", "SepalWidthCm").show();
+        System.out.println("Select distinct value of Species");
+        irisDf.select("Species").distinct().show();
+        System.out.println("filter on Species");
+        irisDf.filter("Species ==' Iris-setosa' and SepalLengthCm > 1").show();
+        System.out.println("descriptive statistics");
+        irisDf.describe().show();
+        System.out.println("Group by");
+        irisDf.groupBy("Species").agg(
+                        avg("SepalLengthCm").alias("SepalLengthCmAvg"),
+                        avg("PetalLengthCm").alias("PetalLengthCmAvg"),
+                        min("PetalLengthCm").alias("MinPetalLengthCm"))
+                .show();
+        System.out.println("Add new Column");
+        irisDf = irisDf.withColumn("SepalArea", col("SepalLengthCm").
+                multiply(col("SepalWidthCm")));
+        irisDf.show(5);
+        System.out.println("Drop column");
+        irisDf = irisDf.drop("SepalArea");
+        irisDf.show(5);
+        System.out.println("Rename column");
+        irisDf = irisDf.withColumnRenamed("Species", "FlowerType");
+        irisDf.show(5);
+    }
+}
