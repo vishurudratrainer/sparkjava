@@ -1,6 +1,5 @@
 https://github.com/vishurudratrainer/notebooks/blob/main/jpmcsto/datasets-master/Iris.csv
 
-
 package dataframe;
 
 import org.apache.spark.sql.Dataset;
@@ -47,5 +46,14 @@ public class IrisDf {
         System.out.println("Rename column");
         irisDf = irisDf.withColumnRenamed("Species", "FlowerType");
         irisDf.show(5);
+        System.out.println("New column based on condition");
+        irisDf = irisDf.withColumn("Sepal_length_category",
+                when(col("SepalLengthCm").lt(4.0), lit("Short"))
+                        .when(col("SepalLengthCm").geq("4.1")
+                                .and(col("SepalLengthCm").lt(6.0)), lit("Medium"))
+                        .otherwise(lit("Long")));
+        irisDf.show();
+
     }
 }
+
