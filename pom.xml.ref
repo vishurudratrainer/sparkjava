@@ -1,4 +1,5 @@
 https://gist.githubusercontent.com/nnbphuong/def91b5553736764e8e08f6255390f37/raw/373a856a3c9c1119e34b344de9230ae2ea89569d/BostonHousing.csv
+https://raw.githubusercontent.com/MainakRepositor/Car-Premium-Prediction/refs/heads/master/car-prices.csv
 package mlib;
 
 import org.apache.spark.ml.Pipeline;
