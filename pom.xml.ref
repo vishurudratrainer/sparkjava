@@ -1,16 +1,15 @@
-https://github.com/vishurudratrainer/notebooks/blob/main/jpmcsto/datasets-master/Iris.csv
 package dataframe;
 
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.api.java.UDF1;
-import org.apache.spark.sql.types.DataTypes;
 
-import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.struct;
 
-public class IrisUdf {
+public class AuthorsDf {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession
@@ -21,23 +20,89 @@ public class IrisUdf {
 
         Dataset<Row> irisDf = spark.read().option("header", "true")
                 .option("inferSchema", "true")
-                .csv("data/Iris.csv");
-        UDF1<String,String> speciesFormatter =new UDF1<String, String>() {
-            @Override
-            public String call(String s) throws Exception {
-                if(s ==null)
-                return "";
-                else return s.toUpperCase()+"FLOWER";
-            }
-        };
-        spark.udf().register("formatSpecies",speciesFormatter, DataTypes.StringType);
-        Dataset<Row> newDf =irisDf.withColumn("newcol",callUDF("formatSpecies",col("Species")));
-        newDf.show();
-        irisDf.createOrReplaceTempView("iris_table");
-        Dataset<Row> newDf1 =spark.sql("select Species,formatSpecies(Species) from iris_table ");
-        newDf1.show();
+                .csv("data/authors.csv");
+        irisDf=irisDf.withColumn("external",struct(col("link"),col("wikipedia")));
+        irisDf.show(5);
+        irisDf=irisDf.select(col("id"),col("name"),col("external"));
+        irisDf.show(5);
+
+        Dataset<Author> authorDataset = irisDf.as(Encoders.bean(Author.class));
+        authorDataset.foreach((ForeachFunction<Author>) author -> System.out.println(author));
+
+    }
+}
+
+package dataframe;
+
+public class Author{
+    @Override
+    public String toString() {
+        return "Author{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", external=" + external +
+                '}';
+    }
+
+    private Integer id;
+    private String name;
+
+
+    public Extra getExternal() {
+        return external;
+    }
+
+    public void setExternal(Extra external) {
+        this.external = external;
+    }
+
+    private Extra external;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
 
 
+package dataframe;
 
+public class Extra{
+    private String link;
+    private String wikipedia;
+
+    @Override
+    public String toString() {
+        return "Link{" +
+                "link='" + link + '\'' +
+                ", wikipedia='" + wikipedia + '\'' +
+                '}';
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getWikipedia() {
+        return wikipedia;
+    }
+
+    public void setWikipedia(String wikipedia) {
+        this.wikipedia = wikipedia;
+    }
+}
