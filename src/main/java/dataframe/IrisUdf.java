@@ -1,0 +1,40 @@
+package dataframe;
+
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.api.java.UDF1;
+import org.apache.spark.sql.types.DataTypes;
+
+import static org.apache.spark.sql.functions.callUDF;
+import static org.apache.spark.sql.functions.col;
+
+public class IrisUdf {
+
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession
+                .builder()
+                .appName("Iris")
+                .master("local[4]")
+                .getOrCreate();
+
+        Dataset<Row> irisDf = spark.read().option("header", "true")
+                .option("inferSchema", "true")
+                .csv("data/Iris.csv");
+        UDF1<String,String> speciesFormatter =new UDF1<String, String>() {
+            @Override
+            public String call(String s) throws Exception {
+                if(s ==null)
+                return "";
+                else return s.toUpperCase()+"FLOWER";
+            }
+        };
+        spark.udf().register("formatSpecies",speciesFormatter, DataTypes.StringType);
+        Dataset<Row> newDf =irisDf.withColumn("newcol",callUDF("formatSpecies",col("Species")));
+        newDf.show();
+        irisDf.createOrReplaceTempView("iris_table");
+        Dataset<Row> newDf1 =spark.sql("select Species,formatSpecies(Species) from iris_table ");
+        newDf1.show();
+        newDf1.createOrReplaceTempView("newDf1");
+    }
+}
