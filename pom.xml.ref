@@ -1,4 +1,5 @@
-package mlib;
+package dataframe;
+
 
 import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.clustering.KMeansModel;
@@ -19,7 +20,7 @@ public class Clustering {
 //getting data
         Dataset<Row> irisDf = spark.read().option("header", "true")
                 .option("inferSchema", "true")
-                .csv("data/Iris.csv");
+                .csv("C:\\sparkexamples\\learning-spark-with-java-master\\learning-spark-with-java-master\\src\\main\\resources\\Iris.csv");
         irisDf = irisDf.drop("id");
         //convert output column to numeric
 
@@ -37,9 +38,12 @@ public class Clustering {
                 .setMaxIter(maxIterations)
                 .setSeed(seed);
         Dataset<Row> featuresDf = vectorAssembler.transform(irisDf);
-       KMeansModel model = kMeans.fit(featuresDf);
+        featuresDf.show();
+        KMeansModel model = kMeans.fit(featuresDf);
         Dataset<Row> predictions =model.transform(featuresDf);
         predictions.show();
+        predictions.select("Species","prediction")
+                .write().csv("C:\\sparkexamples\\learning-spark-with-java-master\\learning-spark-with-java-master\\src\\main\\resources\\predictions.csv");
 
     }
 }
