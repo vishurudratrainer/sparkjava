@@ -1,49 +1,31 @@
-package dataframe;
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
+    <groupId>org.example</groupId>
+    <artifactId>gs1</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-import org.apache.spark.ml.clustering.KMeans;
-import org.apache.spark.ml.clustering.KMeansModel;
-import org.apache.spark.ml.feature.StringIndexer;
-import org.apache.spark.ml.feature.VectorAssembler;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-public class Clustering {
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.12</artifactId>
+            <version>3.5.6</version>
+        </dependency>
 
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession
-                .builder()
-                .appName("Iris")
-                .master("local[4]")
-                .getOrCreate();
-//getting data
-        Dataset<Row> irisDf = spark.read().option("header", "true")
-                .option("inferSchema", "true")
-                .csv("C:\\sparkexamples\\learning-spark-with-java-master\\learning-spark-with-java-master\\src\\main\\resources\\Iris.csv");
-        irisDf = irisDf.drop("id");
-        //convert output column to numeric
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.12</artifactId>
+            <version>3.5.6</version>
+        </dependency>
+    </dependencies>
 
-        //thses converts all our input cplumns to feature column as an array
-        VectorAssembler vectorAssembler = new VectorAssembler()
-                .setInputCols(new String[]{"SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"})
-                .setOutputCol("features");
-        //creating decision tree
-        int numOfClusters =3;
-        int maxIterations=100;
-        long seed =1L;
-        KMeans kMeans = new KMeans()
-                .setFeaturesCol("features")
-                .setK(numOfClusters)
-                .setMaxIter(maxIterations)
-                .setSeed(seed);
-        Dataset<Row> featuresDf = vectorAssembler.transform(irisDf);
-        featuresDf.show();
-        KMeansModel model = kMeans.fit(featuresDf);
-        Dataset<Row> predictions =model.transform(featuresDf);
-        predictions.show();
-        predictions.select("Species","prediction")
-                .write().csv("C:\\sparkexamples\\learning-spark-with-java-master\\learning-spark-with-java-master\\src\\main\\resources\\predictions.csv");
-
-    }
-}
+</project>
