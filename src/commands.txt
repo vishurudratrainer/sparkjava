@@ -1,3 +1,10 @@
  spark-submit --master spark://localhost:7077  --class com.training.rdd.FromRowsAndSchema ./gs1-1.0-SNAPSHOT.jar
 
 docker run -it --rm -p 9999:9999 gophernet/netcat -l -p 9999
+
+docker exec -it -w /opt/kafka/bin broker sh
+./kafka-topics.sh --create --topic sparkinputtopic --bootstrap-server localhost:9092
+/opt/kafka/bin $ ./kafka-console-producer.sh --bootstrap-server localhost:9092 --topic sparkinputtopic
+{"id":1, "event_type":"click", "timestamp":"2025-07-27T10:00:00Z"}
+{"id":2, "event_type":"view", "timestamp":"2025-07-27T10:00:05Z"}
+{"id":3, "event_type":"click", "timestamp":"2025-07-27T10:00:10Z"}
